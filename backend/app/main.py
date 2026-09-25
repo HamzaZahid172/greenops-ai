@@ -6,6 +6,9 @@ from app.core.config import settings
 from app.api.routes.carbon import (
     router as carbon_router,
 )
+from app.api.routes.scheduler import (
+    router as scheduler_router,
+)
 
 
 app = FastAPI(
@@ -50,5 +53,10 @@ app.include_router(
 
 app.include_router(
     carbon_router,
+    prefix=settings.api_v1_prefix,
+)
+
+app.include_router(
+    scheduler_router,
     prefix=settings.api_v1_prefix,
 )
