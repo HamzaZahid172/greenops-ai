@@ -155,3 +155,20 @@
 
   border-radius: 10px;
 }
+
+.ai-response {
+  margin: 24px 0;
+
+  padding: 20px;
+
+  background: #f5f7f6;
+
+  border:
+    1px solid #e0e5e2;
+
+  border-radius: 10px;
+
+  white-space: pre-wrap;
+
+  line-height: 1.6;
+}

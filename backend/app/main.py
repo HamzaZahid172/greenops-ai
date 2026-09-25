@@ -25,6 +25,10 @@ from app.api.routes.workloads import (
 
 from app.core.config import settings
 
+from app.api.routes.ai import (
+    router as ai_router,
+)
+
 
 app = FastAPI(
     title=settings.app_name,
@@ -87,5 +91,10 @@ app.include_router(
 
 app.include_router(
     history_router,
+    prefix=settings.api_v1_prefix,
+)
+
+app.include_router(
+    ai_router,
     prefix=settings.api_v1_prefix,
 )
