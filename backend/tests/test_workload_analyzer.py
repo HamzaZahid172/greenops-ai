@@ -1,12 +1,4 @@
-from fastapi.testclient import TestClient
-
-from app.main import app
-
-
-client = TestClient(app)
-
-
-def test_analyze_efficient_workload():
+def test_analyze_efficient_workload(client):
     response = client.post(
         "/api/v1/workloads/analyze",
         json={
@@ -29,7 +21,7 @@ def test_analyze_efficient_workload():
     assert data["recommendations"] == []
 
 
-def test_detect_over_provisioned_workload():
+def test_detect_over_provisioned_workload(client):
     response = client.post(
         "/api/v1/workloads/analyze",
         json={
@@ -52,7 +44,8 @@ def test_detect_over_provisioned_workload():
 
     codes = [
         recommendation["code"]
-        for recommendation in data["recommendations"]
+        for recommendation
+        in data["recommendations"]
     ]
 
     assert "LOW_CPU_UTILIZATION" in codes
@@ -60,7 +53,7 @@ def test_detect_over_provisioned_workload():
     assert "SCHEDULING_OPPORTUNITY" in codes
 
 
-def test_reject_invalid_cpu_usage():
+def test_reject_invalid_cpu_usage(client):
     response = client.post(
         "/api/v1/workloads/analyze",
         json={

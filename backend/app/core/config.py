@@ -5,9 +5,15 @@ class Settings(BaseSettings):
     app_name: str = "GreenOps AI"
     app_version: str = "0.1.0"
     app_environment: str = "development"
+
     api_v1_prefix: str = "/api/v1"
+
+    database_url: str = (
+        "postgresql+asyncpg://localhost/greenops_ai"
+    )
+
     carbon_api_base_url: str = (
-    "https://api.carbonintensity.org.uk"
+        "https://api.carbonintensity.org.uk"
     )
 
     model_config = SettingsConfigDict(
