@@ -46,3 +46,88 @@
   border: 1px solid #e0e5e2;
   border-radius: 8px;
 }
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 18px 40px;
+
+  background: white;
+
+  border-bottom:
+    1px solid #e0e5e2;
+}
+
+.app-header nav {
+  display: flex;
+  gap: 10px;
+}
+
+.app-header button {
+  padding: 10px 14px;
+
+  border:
+    1px solid #d5ddd8;
+
+  border-radius: 8px;
+
+  background: white;
+
+  cursor: pointer;
+}
+
+
+.carbon-current,
+.carbon-forecast {
+  margin-top: 30px;
+
+  padding: 24px;
+
+  background: white;
+
+  border:
+    1px solid #e0e5e2;
+
+  border-radius: 12px;
+}
+
+
+.carbon-value {
+  margin: 20px 0;
+
+  font-size: 42px;
+
+  font-weight: 700;
+}
+
+
+.carbon-value span {
+  font-size: 16px;
+
+  font-weight: 400;
+}
+
+
+.forecast-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(130px, 1fr)
+    );
+
+  gap: 12px;
+}
+
+
+.forecast-card {
+  padding: 16px;
+
+  border:
+    1px solid #e0e5e2;
+
+  border-radius: 8px;
+}
