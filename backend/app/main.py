@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes.health import router as health_router
+from app.api.routes.workloads import router as workloads_router
 from app.core.config import settings
 
 
@@ -36,5 +37,10 @@ async def root():
 
 app.include_router(
     health_router,
+    prefix=settings.api_v1_prefix,
+)
+
+app.include_router(
+    workloads_router,
     prefix=settings.api_v1_prefix,
 )

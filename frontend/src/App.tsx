@@ -1,7 +1,11 @@
-import Dashboard from "./pages/Dashboard";
+import WorkloadAnalyzer from "./pages/WorkloadAnalyzer";
+
 
 function App() {
-  return <Dashboard />;
+  return (
+    <WorkloadAnalyzer />
+  );
 }
+
 
 export default App;
