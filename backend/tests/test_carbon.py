@@ -1,10 +1,7 @@
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock
 
-from fastapi.testclient import TestClient
-
 from app.api.routes import carbon
-from app.main import app
 
 from app.schemas.carbon import (
     CarbonCurrentResponse,
@@ -13,13 +10,9 @@ from app.schemas.carbon import (
 )
 
 
-client = TestClient(app)
-
-
 def build_point(
     forecast: int = 120,
 ) -> CarbonIntensityPoint:
-
     return CarbonIntensityPoint(
         from_time=datetime(
             2026,
@@ -44,6 +37,7 @@ def build_point(
 
 
 def test_current_carbon(
+    client,
     monkeypatch,
 ):
     response_model = CarbonCurrentResponse(
@@ -79,6 +73,7 @@ def test_current_carbon(
 
 
 def test_carbon_forecast(
+    client,
     monkeypatch,
 ):
     response_model = CarbonForecastResponse(

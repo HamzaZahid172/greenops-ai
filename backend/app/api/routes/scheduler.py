@@ -1,18 +1,24 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+)
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.db.session import get_db
+from app.repositories.history import (
+    save_carbon_schedule,
+)
 from app.schemas.scheduler import (
     CarbonScheduleRequest,
     CarbonScheduleResponse,
 )
-
 from app.services.carbon.base import (
     CarbonProviderError,
 )
-
 from app.services.carbon.gb_provider import (
     GBCarbonIntensityProvider,
 )
-
 from app.services.carbon.scheduler import (
     find_best_carbon_window,
 )
@@ -33,16 +39,13 @@ provider = GBCarbonIntensityProvider()
 )
 async def schedule_workload(
     request: CarbonScheduleRequest,
+    db: AsyncSession = Depends(get_db),
 ):
     try:
-        forecast = (
-            await provider.get_forecast()
-        )
+        forecast = await provider.get_forecast()
 
-        return find_best_carbon_window(
-            workload_name=(
-                request.workload_name
-            ),
+        result = find_best_carbon_window(
+            workload_name=request.workload_name,
             forecast_points=forecast.points,
             runtime_minutes=(
                 request.runtime_minutes
@@ -51,6 +54,14 @@ async def schedule_workload(
                 request.max_delay_hours
             ),
         )
+
+        await save_carbon_schedule(
+            db,
+            request,
+            result,
+        )
+
+        return result
 
     except CarbonProviderError as exc:
         raise HTTPException(
