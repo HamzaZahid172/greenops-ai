@@ -1,5 +1,7 @@
 import json
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.schemas.agent import (
     AgentQueryRequest,
     AgentQueryResponse,
@@ -76,6 +78,7 @@ Provide a concise engineering answer.
 
 async def run_agent(
     request: AgentQueryRequest,
+    db: AsyncSession,
 ) -> AgentQueryResponse:
 
     planned_tools = (
@@ -98,6 +101,7 @@ async def run_agent(
         output = await execute_tool(
             tool_name,
             request,
+            db,
         )
 
         trace.append(

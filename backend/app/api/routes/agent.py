@@ -1,7 +1,14 @@
 from fastapi import (
     APIRouter,
     HTTPException,
+    Depends
 )
+
+from sqlalchemy.ext.asyncio import (
+    AsyncSession,
+)
+
+from app.db.session import get_db
 
 from app.schemas.agent import (
     AgentQueryRequest,
@@ -33,11 +40,13 @@ router = APIRouter(
 )
 async def agent_query(
     request: AgentQueryRequest,
+    db: AsyncSession = Depends(get_db),
 ):
 
     try:
         return await run_agent(
-            request
+            request,
+            db,
         )
 
     except AIProviderError as exc:

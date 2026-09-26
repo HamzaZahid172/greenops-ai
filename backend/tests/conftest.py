@@ -73,6 +73,18 @@ async def _prepare_test_database() -> None:
 
     finally:
         await test_engine.dispose()
+    
+    vector_connection = await asyncpg.connect(
+    f"postgresql://localhost/{TEST_DB_NAME}"
+    )
+
+    try:
+        await vector_connection.execute(
+            "CREATE EXTENSION IF NOT EXISTS vector"
+        )
+
+    finally:
+        await vector_connection.close()
 
 
 @pytest.fixture(

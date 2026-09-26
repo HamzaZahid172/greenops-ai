@@ -13,6 +13,7 @@ ALLOWED_TOOLS = {
     "analyze_workload",
     "get_current_carbon",
     "find_low_carbon_window",
+    "search_documentation",
 }
 
 

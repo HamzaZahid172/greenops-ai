@@ -24,6 +24,9 @@ from app.api.routes.ai import (
 from app.api.routes.agent import (
     router as agent_router,
 )
+from app.api.routes.rag import (
+    router as rag_router,
+)
 
 
 app = FastAPI(
@@ -97,5 +100,10 @@ app.include_router(
 
 app.include_router(
     agent_router,
+    prefix=settings.api_v1_prefix,
+)
+
+app.include_router(
+    rag_router,
     prefix=settings.api_v1_prefix,
 )
