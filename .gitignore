@@ -251,3 +251,8 @@ coverage/
 # Temporary files
 tmp/
 temp/
+
+
+# AI evaluation generated reports
+evaluation/results/*.json
+!evaluation/results/.gitkeep

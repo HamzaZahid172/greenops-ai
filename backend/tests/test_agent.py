@@ -224,3 +224,97 @@ def test_agent_uses_documentation_tool(
         "three replicas"
         in data["answer"]
     )
+
+def test_agent_filters_inapplicable_workload_tool(
+    client,
+    monkeypatch,
+):
+
+    monkeypatch.setattr(
+        agent_service.provider,
+        "generate",
+        AsyncMock(
+            side_effect=[
+                (
+                    '{"tools": ['
+                    '"search_documentation", '
+                    '"analyze_workload"'
+                    ']}'
+                ),
+                (
+                    "The documentation requires "
+                    "at least three replicas."
+                ),
+            ],
+        ),
+    )
+
+
+    monkeypatch.setattr(
+        tools_service,
+        "search_knowledge_base",
+        AsyncMock(
+            return_value=[
+                RAGSearchHit(
+                    document_id=1,
+
+                    filename=(
+                        "payment-runbook.md"
+                    ),
+
+                    chunk_index=0,
+
+                    content=(
+                        "The payment service "
+                        "requires at least "
+                        "three replicas."
+                    ),
+
+                    similarity=0.98,
+                )
+            ]
+        ),
+    )
+
+
+    response = client.post(
+        "/api/v1/agent/query",
+        json={
+            "question": (
+                "According to the runbook, "
+                "can the payment service "
+                "run with two replicas?"
+            )
+        },
+    )
+
+
+    assert response.status_code == 200
+
+
+    data = response.json()
+
+
+    # The LLM requested two tools,
+    # but analyze_workload is invalid
+    # because no workload context exists.
+    assert data["tools_used"] == [
+        "search_documentation"
+    ]
+
+
+    assert len(
+        data["trace"]
+    ) == 1
+
+
+    assert (
+        data["trace"][0]["tool"]
+        == "search_documentation"
+    )
+
+
+    assert (
+        "three replicas"
+        in data["answer"]
+    )
