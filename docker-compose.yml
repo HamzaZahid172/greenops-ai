@@ -1,0 +1,78 @@
+services:
+
+  db:
+    image: pgvector/pgvector:pg18
+
+    environment:
+      POSTGRES_DB: greenops_ai
+      POSTGRES_USER: greenops
+      POSTGRES_PASSWORD: greenops
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - greenops_postgres_data:/var/lib/postgresql
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U greenops -d greenops_ai"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+
+  backend:
+    build:
+      context: ./backend
+
+    environment:
+      APP_ENVIRONMENT: docker
+
+      DATABASE_URL: >-
+        postgresql+asyncpg://greenops:greenops@db:5432/greenops_ai
+
+      CORS_ORIGINS: >-
+        http://localhost:5173,http://127.0.0.1:5173
+
+      OLLAMA_BASE_URL: >-
+        http://host.docker.internal:11434
+
+      OLLAMA_MODEL: llama3.2:3b
+
+      OLLAMA_EMBEDDING_MODEL: nomic-embed-text
+
+      CARBON_API_BASE_URL: >-
+        https://api.carbonintensity.org.uk
+
+    ports:
+      - "8000:8000"
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+
+  frontend:
+    build:
+      context: ./frontend
+
+      args:
+        VITE_API_BASE_URL: >-
+          http://localhost:8000/api/v1
+
+    ports:
+      - "5173:80"
+
+    depends_on:
+      - backend
+
+
+volumes:
+  greenops_postgres_data:

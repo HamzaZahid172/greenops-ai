@@ -1,4 +1,7 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import (
+    BaseSettings,
+    SettingsConfigDict,
+)
 
 
 class Settings(BaseSettings):
@@ -10,6 +13,11 @@ class Settings(BaseSettings):
 
     database_url: str = (
         "postgresql+asyncpg://localhost/greenops_ai"
+    )
+
+    cors_origins: str = (
+        "http://localhost:5173,"
+        "http://127.0.0.1:5173"
     )
 
     carbon_api_base_url: str = (
@@ -25,18 +33,25 @@ class Settings(BaseSettings):
     ollama_model: str = "llama3.2:3b"
 
     ollama_embedding_model: str = (
-    "nomic-embed-text"
+        "nomic-embed-text"
     )
 
     rag_embedding_dimension: int = 768
-
     rag_chunk_words: int = 350
-
     rag_chunk_overlap_words: int = 60
-
     rag_default_top_k: int = 5
-
     rag_max_file_size_mb: int = 5
+
+    @property
+    def cors_origin_list(
+        self,
+    ) -> list[str]:
+        return [
+            origin.strip()
+            for origin
+            in self.cors_origins.split(",")
+            if origin.strip()
+        ]
 
     model_config = SettingsConfigDict(
         env_file=".env",
