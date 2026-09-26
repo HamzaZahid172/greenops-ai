@@ -3,7 +3,10 @@ import os
 
 import asyncpg
 import pytest
-from sqlalchemy.ext.asyncio import create_async_engine
+
+from sqlalchemy.ext.asyncio import (
+    create_async_engine,
+)
 from sqlalchemy.pool import NullPool
 
 
@@ -13,12 +16,16 @@ TEST_DATABASE_URL = (
     f"postgresql+asyncpg://localhost/{TEST_DB_NAME}"
 )
 
+TEST_DATABASE_ADMIN_URL = (
+    f"postgresql://localhost/{TEST_DB_NAME}"
+)
+
 ADMIN_DATABASE_URL = (
     "postgresql://localhost/postgres"
 )
 
 
-# These must be set before importing FastAPI.
+# These must be set before importing the app.
 os.environ["APP_ENVIRONMENT"] = "test"
 os.environ["DATABASE_URL"] = TEST_DATABASE_URL
 
@@ -31,6 +38,7 @@ from app.main import app
 
 
 async def _prepare_test_database() -> None:
+
     admin_connection = await asyncpg.connect(
         ADMIN_DATABASE_URL
     )
@@ -56,6 +64,21 @@ async def _prepare_test_database() -> None:
         await admin_connection.close()
 
 
+    # Enable pgvector BEFORE SQLAlchemy creates
+    # tables containing Vector columns.
+    vector_connection = await asyncpg.connect(
+        TEST_DATABASE_ADMIN_URL
+    )
+
+    try:
+        await vector_connection.execute(
+            "CREATE EXTENSION IF NOT EXISTS vector"
+        )
+
+    finally:
+        await vector_connection.close()
+
+
     test_engine = create_async_engine(
         TEST_DATABASE_URL,
         poolclass=NullPool,
@@ -63,6 +86,7 @@ async def _prepare_test_database() -> None:
 
     try:
         async with test_engine.begin() as connection:
+
             await connection.run_sync(
                 Base.metadata.drop_all
             )
@@ -73,18 +97,6 @@ async def _prepare_test_database() -> None:
 
     finally:
         await test_engine.dispose()
-    
-    vector_connection = await asyncpg.connect(
-    f"postgresql://localhost/{TEST_DB_NAME}"
-    )
-
-    try:
-        await vector_connection.execute(
-            "CREATE EXTENSION IF NOT EXISTS vector"
-        )
-
-    finally:
-        await vector_connection.close()
 
 
 @pytest.fixture(

@@ -6,6 +6,14 @@ from app.services.agent import (
     agent as agent_service,
 )
 
+from app.schemas.rag import (
+    RAGSearchHit,
+)
+
+from app.services.agent import (
+    tools as tools_service,
+)
+
 
 def test_agent_uses_workload_tool(
     client,
@@ -138,4 +146,81 @@ def test_agent_fallback_planner(
     assert (
         "analyze_workload"
         in data["tools_used"]
+    )
+
+def test_agent_uses_documentation_tool(
+    client,
+    monkeypatch,
+):
+
+    monkeypatch.setattr(
+        agent_service.provider,
+        "generate",
+        AsyncMock(
+            side_effect=[
+                (
+                    '{"tools": '
+                    '["search_documentation"]}'
+                ),
+                (
+                    "The documentation requires "
+                    "at least three replicas."
+                ),
+            ],
+        ),
+    )
+
+
+    monkeypatch.setattr(
+        tools_service,
+        "search_knowledge_base",
+        AsyncMock(
+            return_value=[
+                RAGSearchHit(
+                    document_id=1,
+                    filename=(
+                        "payment-runbook.md"
+                    ),
+                    chunk_index=0,
+                    content=(
+                        "The payment service "
+                        "requires at least "
+                        "three replicas."
+                    ),
+                    similarity=0.98,
+                )
+            ]
+        ),
+    )
+
+
+    response = client.post(
+        "/api/v1/agent/query",
+        json={
+            "question": (
+                "According to the runbook, "
+                "can payment run with "
+                "two replicas?"
+            )
+        },
+    )
+
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert (
+        "search_documentation"
+        in data["tools_used"]
+    )
+
+    assert (
+        data["trace"][0]["tool"]
+        == "search_documentation"
+    )
+
+    assert (
+        "three replicas"
+        in data["answer"]
     )
