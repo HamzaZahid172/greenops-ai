@@ -6,8 +6,16 @@ import WorkloadAnalyzer from "./pages/WorkloadAnalyzer";
 import CarbonScheduler from "./pages/CarbonScheduler";
 import AIAssistant from "./pages/AIAssistant";
 import AgentAssistant from "./pages/AgentAssistant";
+import KnowledgeBase from "./pages/KnowledgeBase";
 
-type View = "overview" | "workloads" | "carbon" | "scheduler" | "ai" | "agent";
+type View =
+  | "overview"
+  | "workloads"
+  | "carbon"
+  | "scheduler"
+  | "ai"
+  | "agent"
+  | "knowledge";
 
 function App() {
   const [view, setView] = useState<View>("overview");
@@ -29,6 +37,8 @@ function App() {
           <button onClick={() => setView("ai")}>AI Assistant</button>
 
           <button onClick={() => setView("agent")}>AI Agent</button>
+
+          <button onClick={() => setView("knowledge")}>Knowledge Base</button>
         </nav>
       </header>
 
@@ -43,6 +53,8 @@ function App() {
       {view === "ai" && <AIAssistant />}
 
       {view === "agent" && <AgentAssistant />}
+
+      {view === "knowledge" && <KnowledgeBase />}
     </>
   );
 }

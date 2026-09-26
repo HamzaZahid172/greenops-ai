@@ -20,6 +20,12 @@ from app.services.workload_analyzer import (
     analyze_workload,
 )
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.services.rag.retriever import (
+    search_knowledge_base,
+)
+
 
 carbon_provider = (
     GBCarbonIntensityProvider()
@@ -113,6 +119,7 @@ async def schedule_tool(
 async def execute_tool(
     tool_name: str,
     request: AgentQueryRequest,
+    db: AsyncSession,
 ) -> dict[str, Any]:
 
     if tool_name == "analyze_workload":
@@ -123,6 +130,12 @@ async def execute_tool(
     if tool_name == "get_current_carbon":
         return await current_carbon_tool(
             request
+        )
+
+    if tool_name == "search_documentation":
+        return await search_documentation_tool(
+            request,
+            db,
         )
 
     if (
@@ -136,4 +149,24 @@ async def execute_tool(
     return {
         "error":
             f"Unknown tool: {tool_name}"
+    }
+
+async def search_documentation_tool(
+    request: AgentQueryRequest,
+    db: AsyncSession,
+) -> dict[str, object]:
+
+    results = await search_knowledge_base(
+        session=db,
+        query=request.question,
+        top_k=5,
+    )
+
+    return {
+        "results": [
+            result.model_dump(
+                mode="json"
+            )
+            for result in results
+        ]
     }

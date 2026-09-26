@@ -172,3 +172,144 @@
 
   line-height: 1.6;
 }
+
+.knowledge-section {
+  margin-top: 30px;
+  padding: 24px;
+
+  background: white;
+
+  border:
+    1px solid #e0e5e2;
+
+  border-radius: 12px;
+}
+
+
+.section-heading {
+  display: flex;
+
+  align-items: center;
+
+  justify-content:
+    space-between;
+
+  gap: 16px;
+}
+
+
+.document-upload-form,
+.knowledge-question-form {
+  display: grid;
+
+  gap: 16px;
+
+  margin-top: 18px;
+}
+
+
+.knowledge-question-form textarea {
+  width: 100%;
+
+  padding: 14px;
+
+  font: inherit;
+
+  resize: vertical;
+
+  border:
+    1px solid #ccd5d0;
+
+  border-radius: 8px;
+}
+
+
+.document-upload-form button,
+.knowledge-question-form button,
+.knowledge-section button {
+  width: fit-content;
+
+  padding:
+    10px 16px;
+
+  border:
+    1px solid #ccd5d0;
+
+  border-radius: 8px;
+
+  background: white;
+
+  cursor: pointer;
+}
+
+
+.document-upload-form button:disabled,
+.knowledge-question-form button:disabled {
+  cursor: not-allowed;
+
+  opacity: 0.6;
+}
+
+
+.document-list,
+.source-list {
+  display: grid;
+
+  gap: 14px;
+
+  margin-top: 18px;
+}
+
+
+.document-card,
+.source-card {
+  display: flex;
+
+  align-items: flex-start;
+
+  justify-content:
+    space-between;
+
+  gap: 20px;
+
+  padding: 18px;
+
+  border:
+    1px solid #e0e5e2;
+
+  border-radius: 10px;
+}
+
+
+.source-card {
+  display: block;
+}
+
+
+.source-card details {
+  margin-top: 12px;
+}
+
+
+.source-card details p {
+  line-height: 1.6;
+
+  white-space: pre-wrap;
+}
+
+
+.rag-answer {
+  margin-top: 28px;
+}
+
+
+.error-message {
+  margin-top: 20px;
+
+  padding: 14px;
+
+  border:
+    1px solid #d8b4b4;
+
+  border-radius: 8px;
+}

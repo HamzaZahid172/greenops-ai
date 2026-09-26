@@ -24,6 +24,20 @@ class Settings(BaseSettings):
 
     ollama_model: str = "llama3.2:3b"
 
+    ollama_embedding_model: str = (
+    "nomic-embed-text"
+    )
+
+    rag_embedding_dimension: int = 768
+
+    rag_chunk_words: int = 350
+
+    rag_chunk_overlap_words: int = 60
+
+    rag_default_top_k: int = 5
+
+    rag_max_file_size_mb: int = 5
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
