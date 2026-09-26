@@ -21,9 +21,7 @@ def fallback_plan(
     request: AgentQueryRequest,
 ) -> list[str]:
 
-    question = (
-        request.question.lower()
-    )
+    question = request.question.lower()
 
     tools: list[str] = []
 
@@ -43,8 +41,7 @@ def fallback_plan(
 
     if any(
         keyword in question
-        for keyword
-        in carbon_keywords
+        for keyword in carbon_keywords
     ):
         tools.append(
             "get_current_carbon"
@@ -61,19 +58,41 @@ def fallback_plan(
 
     if any(
         keyword in question
-        for keyword
-        in schedule_keywords
+        for keyword in schedule_keywords
     ):
         if (
             request.runtime_minutes
             is not None
-            and
-            request.max_delay_hours
+            and request.max_delay_hours
             is not None
         ):
             tools.append(
                 "find_low_carbon_window"
             )
+
+
+    documentation_keywords = (
+        "documentation",
+        "document",
+        "docs",
+        "runbook",
+        "architecture",
+        "deployment",
+        "policy",
+        "requirement",
+        "configuration",
+        "config",
+        "knowledge base",
+        "according to",
+    )
+
+    if any(
+        keyword in question
+        for keyword in documentation_keywords
+    ):
+        tools.append(
+            "search_documentation"
+        )
 
 
     return list(
@@ -129,7 +148,7 @@ AVAILABLE TOOLS
 
 analyze_workload
 Use this when workload efficiency,
-CPU, memory, replicas or infrastructure
+CPU, memory, replicas, or infrastructure
 optimization needs to be analyzed.
 
 get_current_carbon
@@ -139,6 +158,13 @@ electricity carbon-intensity information.
 find_low_carbon_window
 Use this when the user asks when a
 flexible workload should run.
+
+search_documentation
+Use this when the question depends on
+uploaded documentation, architecture,
+runbooks, deployment configuration,
+operational rules, service requirements,
+or internal technical knowledge.
 
 USER QUESTION
 
@@ -162,7 +188,7 @@ Example:
 {{
   "tools": [
     "analyze_workload",
-    "get_current_carbon"
+    "search_documentation"
   ]
 }}
 
