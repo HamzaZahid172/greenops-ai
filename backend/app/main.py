@@ -2,6 +2,13 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import (
     CORSMiddleware,
 )
+
+from app.api.routes.agent import (
+    router as agent_router,
+)
+from app.api.routes.ai import (
+    router as ai_router,
+)
 from app.api.routes.carbon import (
     router as carbon_router,
 )
@@ -11,22 +18,17 @@ from app.api.routes.health import (
 from app.api.routes.history import (
     router as history_router,
 )
+from app.api.routes.rag import (
+    router as rag_router,
+)
 from app.api.routes.scheduler import (
     router as scheduler_router,
 )
 from app.api.routes.workloads import (
     router as workloads_router,
 )
+
 from app.core.config import settings
-from app.api.routes.ai import (
-    router as ai_router,
-)
-from app.api.routes.agent import (
-    router as agent_router,
-)
-from app.api.routes.rag import (
-    router as rag_router,
-)
 
 
 app = FastAPI(
@@ -43,10 +45,11 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-    ],
+
+    # cors_origin_list is already list[str].
+    # Do NOT wrap it inside another [].
+    allow_origins=settings.cors_origin_list,
+
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -69,24 +72,20 @@ app.include_router(
     prefix=settings.api_v1_prefix,
 )
 
-
 app.include_router(
     workloads_router,
     prefix=settings.api_v1_prefix,
 )
-
 
 app.include_router(
     carbon_router,
     prefix=settings.api_v1_prefix,
 )
 
-
 app.include_router(
     scheduler_router,
     prefix=settings.api_v1_prefix,
 )
-
 
 app.include_router(
     history_router,
