@@ -1,3 +1,4 @@
+import time
 from typing import Any
 
 from app.schemas.agent import (
@@ -24,6 +25,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.services.rag.retriever import (
     search_knowledge_base,
+)
+
+from app.observability.metrics import (
+    AGENT_TOOL_CALLS_TOTAL,
+    AGENT_TOOL_DURATION_SECONDS,
 )
 
 
@@ -122,34 +128,74 @@ async def execute_tool(
     db: AsyncSession,
 ) -> dict[str, Any]:
 
-    if tool_name == "analyze_workload":
-        return await analyze_workload_tool(
-            request
+    started = time.perf_counter()
+
+    outcome = "success"
+
+    try:
+
+        if tool_name == "analyze_workload":
+
+            return await analyze_workload_tool(
+                request
+            )
+
+
+        if tool_name == "get_current_carbon":
+
+            return await current_carbon_tool(
+                request
+            )
+
+
+        if tool_name == "search_documentation":
+
+            return await search_documentation_tool(
+                request,
+                db,
+            )
+
+
+        if (
+            tool_name
+            == "find_low_carbon_window"
+        ):
+
+            return await schedule_tool(
+                request
+            )
+
+
+        outcome = "unknown_tool"
+
+        return {
+            "error":
+                f"Unknown tool: {tool_name}"
+        }
+
+
+    except Exception:
+        outcome = "error"
+        raise
+
+
+    finally:
+
+        duration = (
+            time.perf_counter()
+            - started
         )
 
-    if tool_name == "get_current_carbon":
-        return await current_carbon_tool(
-            request
-        )
 
-    if tool_name == "search_documentation":
-        return await search_documentation_tool(
-            request,
-            db,
-        )
+        AGENT_TOOL_DURATION_SECONDS.labels(
+            tool=tool_name,
+        ).observe(duration)
 
-    if (
-        tool_name
-        == "find_low_carbon_window"
-    ):
-        return await schedule_tool(
-            request
-        )
 
-    return {
-        "error":
-            f"Unknown tool: {tool_name}"
-    }
+        AGENT_TOOL_CALLS_TOTAL.labels(
+            tool=tool_name,
+            outcome=outcome,
+        ).inc()
 
 async def search_documentation_tool(
     request: AgentQueryRequest,

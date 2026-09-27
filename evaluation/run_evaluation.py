@@ -1,5 +1,6 @@
 import asyncio
 import json
+import os
 import time
 
 from pathlib import Path
@@ -32,16 +33,19 @@ RESULTS_DIR = (
     ROOT / "results"
 )
 
-API_BASE_URL = (
-    "http://127.0.0.1:8000/api/v1"
-)
+API_BASE_URL = os.getenv(
+    "GREENOPS_API_BASE_URL",
+    "http://localhost:8000/api/v1",
+).rstrip("/")
 
 
 async def upload_fixture(
     client: httpx.AsyncClient,
 ) -> int:
 
-    content = FIXTURE_FILE.read_bytes()
+    content = (
+        FIXTURE_FILE.read_bytes()
+    )
 
     response = await client.post(
         f"{API_BASE_URL}/rag/documents",
@@ -124,80 +128,80 @@ async def evaluate_agent(
             results = (
                 trace.get(
                     "output",
-                    {}
+                    {},
                 )
                 .get(
                     "results",
-                    []
+                    [],
                 )
             )
 
             sources.extend(
                 result.get(
                     "filename",
-                    ""
+                    "",
                 )
                 for result
                 in results
             )
 
     return {
-    "id": scenario["id"],
-    "type": "agent",
-    "latency_ms": round(
-        latency_ms,
-        2,
-    ),
-    "tools_used": tools_used,
-    "tool_exact_match":
-        tool_exact_match(
-            expected_tools,
-            tools_used,
+        "id": scenario["id"],
+        "type": "agent",
+        "latency_ms": round(
+            latency_ms,
+            2,
         ),
-    "tool_precision":
-        round(
-            tool_precision(
+        "tools_used": tools_used,
+        "tool_exact_match":
+            tool_exact_match(
                 expected_tools,
                 tools_used,
             ),
-            3,
-        ),
-    "tool_recall":
-        round(
-            tool_recall(
-                expected_tools,
-                tools_used,
+        "tool_precision":
+            round(
+                tool_precision(
+                    expected_tools,
+                    tools_used,
+                ),
+                3,
             ),
-            3,
-        ),
-    "required_term_coverage":
-        round(
-            required_term_coverage(
+        "tool_recall":
+            round(
+                tool_recall(
+                    expected_tools,
+                    tools_used,
+                ),
+                3,
+            ),
+        "required_term_coverage":
+            round(
+                required_term_coverage(
+                    answer,
+                    scenario.get(
+                        "required_terms",
+                        [],
+                    ),
+                ),
+                3,
+            ),
+        "forbidden_hits":
+            forbidden_term_hits(
                 answer,
                 scenario.get(
-                    "required_terms",
+                    "forbidden_terms",
                     [],
                 ),
             ),
-            3,
-        ),
-    "forbidden_hits":
-        forbidden_term_hits(
-            answer,
-            scenario.get(
-                "forbidden_terms",
-                [],
+        "source_hit":
+            source_hit(
+                scenario.get(
+                    "expected_sources",
+                    [],
+                ),
+                sources,
             ),
-        ),
-    "source_hit":
-        source_hit(
-            scenario.get(
-                "expected_sources",
-                [],
-            ),
-            sources,
-        ),
-    "answer": answer,
+        "answer": answer,
     }
 
 
@@ -229,7 +233,7 @@ async def evaluate_rag(
         for source
         in data.get(
             "sources",
-            []
+            [],
         )
     ]
 
@@ -341,7 +345,9 @@ def failure_reasons(
         )
 
     if (
-        result.get("source_hit")
+        result.get(
+            "source_hit"
+        )
         is False
     ):
         reasons.append(
@@ -365,7 +371,9 @@ def failure_reasons(
 async def main() -> None:
 
     scenarios = json.loads(
-        SCENARIOS_FILE.read_text()
+        SCENARIOS_FILE.read_text(
+            encoding="utf-8",
+        )
     )
 
     RESULTS_DIR.mkdir(
@@ -373,20 +381,71 @@ async def main() -> None:
         exist_ok=True,
     )
 
+    evaluation_timeout = httpx.Timeout(
+        connect=10.0,
+        read=360.0,
+        write=60.0,
+        pool=10.0,
+    )
+
+    connection_limits = httpx.Limits(
+        max_connections=10,
+        max_keepalive_connections=0,
+    )
+
+    results: list[dict] = []
+
+    fixture_id: int | None = None
+
     async with httpx.AsyncClient(
-        timeout=180.0,
+        timeout=evaluation_timeout,
+        trust_env=False,
+        follow_redirects=True,
+        limits=connection_limits,
     ) as client:
 
-        fixture_id = (
-            await upload_fixture(
-                client
-            )
+        print(
+            f"Checking GreenOps API: "
+            f"{API_BASE_URL}"
+        )
+
+        health_response = await client.get(
+            f"{API_BASE_URL}/health"
+        )
+
+        health_response.raise_for_status()
+
+        print(
+            "GreenOps API:",
+            health_response.status_code,
         )
 
         try:
-            results = []
+            print(
+                "Uploading evaluation fixture..."
+            )
+
+            fixture_id = (
+                await upload_fixture(
+                    client
+                )
+            )
+
+            print(
+                "Evaluation fixture uploaded:",
+                fixture_id,
+            )
 
             for scenario in scenarios:
+
+                scenario_id = (
+                    scenario["id"]
+                )
+
+                print(
+                    f"Running scenario: "
+                    f"{scenario_id}"
+                )
 
                 if (
                     scenario["type"]
@@ -426,12 +485,30 @@ async def main() -> None:
                     result
                 )
 
-        finally:
-            await delete_fixture(
-                client,
-                fixture_id,
-            )
+                status_text = (
+                    "PASS"
+                    if result["passed"]
+                    else "FAIL"
+                )
 
+                print(
+                    f"Scenario completed: "
+                    f"{scenario_id} "
+                    f"[{status_text}]"
+                )
+
+        finally:
+            if fixture_id is not None:
+
+                print(
+                    "Removing evaluation fixture:",
+                    fixture_id,
+                )
+
+                await delete_fixture(
+                    client,
+                    fixture_id,
+                )
 
     passed = sum(
         1
@@ -444,18 +521,19 @@ async def main() -> None:
     report = {
         "summary": {
             "passed": passed,
-            "failed": total - passed,
+            "failed":
+                total - passed,
             "total": total,
-            "pass_rate": round(
-                passed / total,
-                3,
-            )
-            if total
-            else 0.0,
+            "pass_rate":
+                round(
+                    passed / total,
+                    3,
+                )
+                if total
+                else 0.0,
         },
         "results": results,
     }
-
 
     output_path = (
         RESULTS_DIR
@@ -466,16 +544,22 @@ async def main() -> None:
         json.dumps(
             report,
             indent=2,
-        )
+        ),
+        encoding="utf-8",
     )
 
-
     print()
-    print("GreenOps AI Evaluation")
-    print("======================")
+    print(
+        "GreenOps AI Evaluation"
+    )
+    print(
+        "======================"
+    )
+
     print(
         f"Passed: {passed}/{total}"
     )
+
     print(
         "Pass rate: "
         f"{report['summary']['pass_rate'] * 100:.1f}%"
@@ -483,22 +567,26 @@ async def main() -> None:
 
     for result in results:
 
-        status = (
+        status_text = (
             "PASS"
             if result["passed"]
             else "FAIL"
         )
 
         print(
-            f"{status}: "
+            f"{status_text}: "
             f"{result['id']} "
             f"({result['latency_ms']} ms)"
         )
 
-        if not result["passed"]:
+        if not result[
+            "passed"
+        ]:
 
-            reasons = failure_reasons(
-                result
+            reasons = (
+                failure_reasons(
+                    result
+                )
             )
 
             for reason in reasons:
@@ -506,17 +594,23 @@ async def main() -> None:
                     f"      -> {reason}"
                 )
 
-            if "tools_used" in result:
+            if (
+                "tools_used"
+                in result
+            ):
                 print(
                     "      -> tools used: "
                     f"{result['tools_used']}"
                 )
 
     print()
+
     print(
         f"Report: {output_path}"
     )
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(
+        main()
+    )
