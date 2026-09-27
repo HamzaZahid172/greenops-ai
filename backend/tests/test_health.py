@@ -9,7 +9,7 @@ def test_health_check(client):
 
     assert data["status"] == "healthy"
     assert data["application"] == "GreenOps AI"
-    assert data["version"] == "0.1.0"
+    assert data["version"] == "1.0.0"
 
     # During pytest we intentionally run in test mode.
     assert data["environment"] == "test"
@@ -27,4 +27,4 @@ def test_root(client):
         == "Welcome to GreenOps AI"
     )
 
-    assert data["version"] == "0.1.0"
+    assert data["version"] == "1.0.0"

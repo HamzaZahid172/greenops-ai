@@ -6,7 +6,7 @@ from pydantic_settings import (
 
 class Settings(BaseSettings):
     app_name: str = "GreenOps AI"
-    app_version: str = "0.1.0"
+    app_version: str = "1.0.0"
     app_environment: str = "development"
 
     api_v1_prefix: str = "/api/v1"
