@@ -1,8 +1,10 @@
-from fastapi import FastAPI
+from fastapi import (
+    FastAPI,
+    Response,
+)
 from fastapi.middleware.cors import (
     CORSMiddleware,
 )
-
 from app.api.routes.agent import (
     router as agent_router,
 )
@@ -27,8 +29,14 @@ from app.api.routes.scheduler import (
 from app.api.routes.workloads import (
     router as workloads_router,
 )
-
 from app.core.config import settings
+from prometheus_client import (
+    CONTENT_TYPE_LATEST,
+    generate_latest,
+)
+from app.observability.middleware import (
+    ObservabilityMiddleware,
+)
 
 
 app = FastAPI(
@@ -55,6 +63,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.add_middleware(
+    ObservabilityMiddleware,
+)
+
 
 @app.get(
     "/",
@@ -65,6 +77,16 @@ async def root():
         "message": "Welcome to GreenOps AI",
         "version": settings.app_version,
     }
+
+@app.get(
+    "/metrics",
+    include_in_schema=False,
+)
+async def metrics():
+    return Response(
+        content=generate_latest(),
+        media_type=CONTENT_TYPE_LATEST,
+    )
 
 
 app.include_router(

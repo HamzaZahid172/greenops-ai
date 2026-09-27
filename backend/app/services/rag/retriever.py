@@ -1,5 +1,11 @@
+import time
+
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
+)
+
+from app.observability.metrics import (
+    RAG_RETRIEVAL_DURATION_SECONDS,
 )
 
 from app.repositories.rag import (
@@ -21,44 +27,69 @@ async def search_knowledge_base(
     top_k: int,
 ) -> list[RAGSearchHit]:
 
-    embeddings = (
-        await embedding_provider
-        .embed_texts([query])
-    )
+    started = time.perf_counter()
 
-    query_embedding = embeddings[0]
-
-    rows = await semantic_search(
-        session,
-        query_embedding,
-        top_k,
-    )
-
-    results: list[
-        RAGSearchHit
-    ] = []
-
-    for (
-        chunk,
-        document,
-        distance,
-    ) in rows:
-
-        similarity = round(
-            1.0 - float(distance),
-            4,
+    try:
+        embeddings = (
+            await embedding_provider
+            .embed_texts([query])
         )
 
-        results.append(
-            RAGSearchHit(
-                document_id=document.id,
-                filename=document.filename,
-                chunk_index=(
-                    chunk.chunk_index
-                ),
-                content=chunk.content,
-                similarity=similarity,
+        query_embedding = (
+            embeddings[0]
+        )
+
+        rows = await semantic_search(
+            session,
+            query_embedding,
+            top_k,
+        )
+
+
+        results: list[
+            RAGSearchHit
+        ] = []
+
+
+        for (
+            chunk,
+            document,
+            distance,
+        ) in rows:
+
+            similarity = round(
+                1.0 - float(distance),
+                4,
             )
+
+
+            results.append(
+                RAGSearchHit(
+                    document_id=(
+                        document.id
+                    ),
+                    filename=(
+                        document.filename
+                    ),
+                    chunk_index=(
+                        chunk.chunk_index
+                    ),
+                    content=(
+                        chunk.content
+                    ),
+                    similarity=similarity,
+                )
+            )
+
+
+        return results
+
+    finally:
+        duration = (
+            time.perf_counter()
+            - started
         )
 
-    return results
+        RAG_RETRIEVAL_DURATION_SECONDS.observe(
+            duration
+        )
