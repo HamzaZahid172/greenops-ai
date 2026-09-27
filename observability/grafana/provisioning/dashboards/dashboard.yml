@@ -1,0 +1,17 @@
+apiVersion: 1
+
+providers:
+  - name: GreenOps AI
+
+    orgId: 1
+
+    folder: GreenOps AI
+
+    type: file
+
+    disableDeletion: false
+
+    updateIntervalSeconds: 10
+
+    options:
+      path: /var/lib/grafana/dashboards

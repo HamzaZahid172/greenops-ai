@@ -1,0 +1,130 @@
+from fastapi import (
+    FastAPI,
+    Response,
+)
+from fastapi.middleware.cors import (
+    CORSMiddleware,
+)
+from app.api.routes.agent import (
+    router as agent_router,
+)
+from app.api.routes.ai import (
+    router as ai_router,
+)
+from app.api.routes.carbon import (
+    router as carbon_router,
+)
+from app.api.routes.health import (
+    router as health_router,
+)
+from app.api.routes.history import (
+    router as history_router,
+)
+from app.api.routes.rag import (
+    router as rag_router,
+)
+from app.api.routes.scheduler import (
+    router as scheduler_router,
+)
+from app.api.routes.workloads import (
+    router as workloads_router,
+)
+from app.core.config import settings
+from prometheus_client import (
+    CONTENT_TYPE_LATEST,
+    generate_latest,
+)
+from app.observability.middleware import (
+    ObservabilityMiddleware,
+)
+
+
+app = FastAPI(
+    title=settings.app_name,
+    version=settings.app_version,
+    description=(
+        "Open-source AI platform for analyzing "
+        "and optimizing cloud and AI workloads "
+        "for cost, performance, and carbon "
+        "efficiency."
+    ),
+)
+
+
+app.add_middleware(
+    CORSMiddleware,
+
+    # cors_origin_list is already list[str].
+    # Do NOT wrap it inside another [].
+    allow_origins=settings.cors_origin_list,
+
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.add_middleware(
+    ObservabilityMiddleware,
+)
+
+
+@app.get(
+    "/",
+    tags=["Root"],
+)
+async def root():
+    return {
+        "message": "Welcome to GreenOps AI",
+        "version": settings.app_version,
+    }
+
+@app.get(
+    "/metrics",
+    include_in_schema=False,
+)
+async def metrics():
+    return Response(
+        content=generate_latest(),
+        media_type=CONTENT_TYPE_LATEST,
+    )
+
+
+app.include_router(
+    health_router,
+    prefix=settings.api_v1_prefix,
+)
+
+app.include_router(
+    workloads_router,
+    prefix=settings.api_v1_prefix,
+)
+
+app.include_router(
+    carbon_router,
+    prefix=settings.api_v1_prefix,
+)
+
+app.include_router(
+    scheduler_router,
+    prefix=settings.api_v1_prefix,
+)
+
+app.include_router(
+    history_router,
+    prefix=settings.api_v1_prefix,
+)
+
+app.include_router(
+    ai_router,
+    prefix=settings.api_v1_prefix,
+)
+
+app.include_router(
+    agent_router,
+    prefix=settings.api_v1_prefix,
+)
+
+app.include_router(
+    rag_router,
+    prefix=settings.api_v1_prefix,
+)

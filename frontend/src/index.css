@@ -1,0 +1,315 @@
+.workload-form {
+  display: grid;
+  gap: 18px;
+  max-width: 650px;
+  margin-top: 32px;
+  padding: 28px;
+  background: white;
+  border: 1px solid #e0e5e2;
+  border-radius: 12px;
+}
+
+.workload-form label {
+  display: grid;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.workload-form input,
+.workload-form select {
+  padding: 12px;
+  border: 1px solid #ccd5d0;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+.workload-form button {
+  padding: 14px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.analysis-result {
+  max-width: 650px;
+  margin-top: 32px;
+  padding: 28px;
+  background: white;
+  border: 1px solid #e0e5e2;
+  border-radius: 12px;
+}
+
+.recommendation {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid #e0e5e2;
+  border-radius: 8px;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 18px 40px;
+
+  background: white;
+
+  border-bottom:
+    1px solid #e0e5e2;
+}
+
+.app-header nav {
+  display: flex;
+  gap: 10px;
+}
+
+.app-header button {
+  padding: 10px 14px;
+
+  border:
+    1px solid #d5ddd8;
+
+  border-radius: 8px;
+
+  background: white;
+
+  cursor: pointer;
+}
+
+
+.carbon-current,
+.carbon-forecast {
+  margin-top: 30px;
+
+  padding: 24px;
+
+  background: white;
+
+  border:
+    1px solid #e0e5e2;
+
+  border-radius: 12px;
+}
+
+
+.carbon-value {
+  margin: 20px 0;
+
+  font-size: 42px;
+
+  font-weight: 700;
+}
+
+
+.carbon-value span {
+  font-size: 16px;
+
+  font-weight: 400;
+}
+
+
+.forecast-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(130px, 1fr)
+    );
+
+  gap: 12px;
+}
+
+
+.forecast-card {
+  padding: 16px;
+
+  border:
+    1px solid #e0e5e2;
+
+  border-radius: 8px;
+}
+
+.schedule-comparison {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(220px, 1fr)
+    );
+
+  gap: 20px;
+
+  margin: 24px 0;
+}
+
+
+.schedule-comparison > div {
+  padding: 20px;
+
+  border:
+    1px solid #e0e5e2;
+
+  border-radius: 10px;
+}
+
+.ai-response {
+  margin: 24px 0;
+
+  padding: 20px;
+
+  background: #f5f7f6;
+
+  border:
+    1px solid #e0e5e2;
+
+  border-radius: 10px;
+
+  white-space: pre-wrap;
+
+  line-height: 1.6;
+}
+
+.knowledge-section {
+  margin-top: 30px;
+  padding: 24px;
+
+  background: white;
+
+  border:
+    1px solid #e0e5e2;
+
+  border-radius: 12px;
+}
+
+
+.section-heading {
+  display: flex;
+
+  align-items: center;
+
+  justify-content:
+    space-between;
+
+  gap: 16px;
+}
+
+
+.document-upload-form,
+.knowledge-question-form {
+  display: grid;
+
+  gap: 16px;
+
+  margin-top: 18px;
+}
+
+
+.knowledge-question-form textarea {
+  width: 100%;
+
+  padding: 14px;
+
+  font: inherit;
+
+  resize: vertical;
+
+  border:
+    1px solid #ccd5d0;
+
+  border-radius: 8px;
+}
+
+
+.document-upload-form button,
+.knowledge-question-form button,
+.knowledge-section button {
+  width: fit-content;
+
+  padding:
+    10px 16px;
+
+  border:
+    1px solid #ccd5d0;
+
+  border-radius: 8px;
+
+  background: white;
+
+  cursor: pointer;
+}
+
+
+.document-upload-form button:disabled,
+.knowledge-question-form button:disabled {
+  cursor: not-allowed;
+
+  opacity: 0.6;
+}
+
+
+.document-list,
+.source-list {
+  display: grid;
+
+  gap: 14px;
+
+  margin-top: 18px;
+}
+
+
+.document-card,
+.source-card {
+  display: flex;
+
+  align-items: flex-start;
+
+  justify-content:
+    space-between;
+
+  gap: 20px;
+
+  padding: 18px;
+
+  border:
+    1px solid #e0e5e2;
+
+  border-radius: 10px;
+}
+
+
+.source-card {
+  display: block;
+}
+
+
+.source-card details {
+  margin-top: 12px;
+}
+
+
+.source-card details p {
+  line-height: 1.6;
+
+  white-space: pre-wrap;
+}
+
+
+.rag-answer {
+  margin-top: 28px;
+}
+
+
+.error-message {
+  margin-top: 20px;
+
+  padding: 14px;
+
+  border:
+    1px solid #d8b4b4;
+
+  border-radius: 8px;
+}

@@ -1,0 +1,84 @@
+[
+  {
+    "id": "agent-workload-analysis",
+    "type": "agent",
+    "request": {
+      "question": "Is this workload efficiently provisioned?",
+      "workload": {
+        "name": "Embedding Worker",
+        "cpu_usage": 15,
+        "memory_usage": 50,
+        "replicas": 5,
+        "runtime_hours": 12,
+        "requests_per_day": 1000,
+        "workload_type": "batch"
+      }
+    },
+    "expected_tools": [
+      "analyze_workload"
+    ],
+    "required_terms": [
+      "CPU",
+      "replica"
+    ],
+    "forbidden_terms": [
+      "$",
+      "€500",
+      "37% carbon"
+    ]
+  },
+  {
+    "id": "agent-documentation",
+    "type": "agent",
+    "request": {
+      "question": "According to the runbook, can the payment service run with two replicas?"
+    },
+    "expected_tools": [
+      "search_documentation"
+    ],
+    "required_terms": [
+      "three",
+      "replica"
+    ],
+    "expected_sources": [
+      "payment-runbook.md"
+    ],
+    "forbidden_terms": [
+      "two replicas are safe"
+    ]
+  },
+  {
+    "id": "rag-payment-policy",
+    "type": "rag",
+    "request": {
+      "question": "What is the minimum replica count for the payment service?",
+      "top_k": 5
+    },
+    "required_terms": [
+      "three",
+      "replica"
+    ],
+    "expected_sources": [
+      "payment-runbook.md"
+    ],
+    "forbidden_terms": [
+      "two replicas"
+    ]
+  },
+  {
+    "id": "rag-unsupported-fact",
+    "type": "rag",
+    "request": {
+      "question": "Which AWS EC2 instance type does the payment service use?",
+      "top_k": 5
+    },
+    "required_terms": [
+      "documentation"
+    ],
+    "forbidden_terms": [
+      "m5.large",
+      "t3.medium",
+      "c6i.large"
+    ]
+  }
+]
